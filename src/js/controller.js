@@ -134,7 +134,7 @@ const showRecipe = async () => {
               </a>
             </div>
     `
-    recipeContainer.innerHTML = ''; // Blank out HTML text that is already there in our Markup which says <p>Start by searching for a recipe or an ingredient. Have fun!</p> so that we can insert the markup variable above using the insertAdjacentHTML method below.
+    recipeContainer.innerHTML = ''; // Blank out HTML text that is already there in our Markup which says <p>Start by searching for a recipe or an ingredient. Have fun!</p> so that we can insert the markup variable above using the insertAdjacentHTML method below. This line of code removes the spinner we created upon the loading of the recipe.
     recipeContainer.insertAdjacentHTML('afterbegin', markup);
   } catch (error) {
     alert(error);
