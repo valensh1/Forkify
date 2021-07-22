@@ -1,0 +1,47 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+var _modelJs = require("./model.js");
+var _recipeViewJs = require("./views/recipeView.js");
+var _recipeViewJsDefault = parcelHelpers.interopDefault(_recipeViewJs);
+var _iconsSvg = require("url:../img/icons.svg"); // When Parcel bundles our files it gets icons from the dist folder but our JavaScript is referencing files from our src-->img folders. This line of code here tells JavaScript to import our icons so it can read them from the dist folder. We use this icons variable throughout our markup variable below.
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+// import 'core-js/stable';  // Polyfilling which is basically making sure some features work in older browsers; Pollyfills everything other than async/await
+var _runtime = require("regenerator-runtime/runtime"); // Polyfilling which is basically making sure some features work in older browsers; Pollyfills async/await
+console.log(_iconsSvgDefault.default); // Prints http://localhost:1234/icons.d4a14980.svg which means it is importing the icons in and its the path to the new icons folder.
+const recipeContainer = document.querySelector('.recipe');
+const timeout = function(s) {
+    return new Promise(function(_, reject) {
+        setTimeout(function() {
+            reject(new Error(`Request took too long! Timeout after ${s} second`));
+        }, s * 1000);
+    });
+};
+// Jonas Recipe API Documentation - https://forkify-api.herokuapp.com/v2
+const renderSpinner = (parentEl)=>{
+    const markup = `\n      <div class="spinner">\n      <svg>\n        <use href="${_iconsSvgDefault.default}#icon-loader"></use>\n      </svg>\n    </div> \n  `;
+    parentEl.innerHTML = ''; // Clears the text of anything inside parent element passed into the function
+    parentEl.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
+};
+// API Call
+const showRecipe = async ()=>{
+    try {
+        const id = window.location.hash.slice(1); // Creation of variable id that gets the hash tag id number out of a windows search bar.
+        console.log(id);
+        if (!id) return; // Guard clause saying if there is no id then just return. This is a modern way to use if else statement without having to put tons of lines of code within blocks
+        renderSpinner(recipeContainer); // Invoke the renderSpinner function passing in the recipeContainer variable as an argument.
+        // Loading Recipe
+        await _modelJs.loadRecipe(id); // Calling the loadRecipe function and passing in the id from our model.js file. Since this is essentially an API/AJAX call and this returns a promise we need to await that promise.
+        // Rendering Recipe
+        _recipeViewJsDefault.default.render(_modelJs.state.recipe);
+    // Creation of markup variable which contains HTML to insert into DOM with the insertAdjacentHTML method.
+    } catch (error) {
+        alert(error);
+    }
+};
+showRecipe(); // Invokes function showRecipe
+[
+    'hashchange',
+    'load'
+].forEach((ev)=>window.addEventListener(ev, showRecipe)
+); // Add event listener for any change to the hash symbol change in the search bar in Google Chrome; Load event add event listner for any loading of the page we want to run the showRecipe method.
+ // window.addEventListener('hashchange', showRecipe);
+ // window.addEventListener('load', showRecipe);
