@@ -1,0 +1,30 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class View {
+    _data;
+    render(data) {
+        this._data = data;
+        const markup = this._generateMarkup();
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    _clear() {
+        this._parentElement.innerHTML = '';
+    }
+    renderSpinner = ()=>{
+        const markup = `\n            <div class="spinner">\n            <svg>\n              <use href="${icons}#icon-loader"></use>\n            </svg>\n          </div> \n        `;
+        this._clear(); // Clears the text of anything inside parent element passed into the function
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
+    };
+    renderError(message = this._errorMessage) {
+        const markup = `\n          <div class="error">\n            <div>\n                <svg>\n                <use href="${icons}#icon-alert-triangle"></use>\n                </svg>\n            </div>\n            <p>${message}</p>\n        </div>\n          `;
+        this._clear(); // Clears the text of anything inside parent element passed into the function
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
+    }
+    renderMessage(message = this._message) {
+        const markup = `\n        <div class="message">\n            <div>\n            <svg>\n                <use href="${icons}#icon-smile"></use>\n            </svg>\n            </div>\n            <p>${message}</p>   \n      </div>\n        `;
+        this._clear(); // Clears the text of anything inside parent element passed into the function
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
+    }
+}
+exports.default = View;
