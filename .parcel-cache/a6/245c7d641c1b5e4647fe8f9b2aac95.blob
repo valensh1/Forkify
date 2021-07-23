@@ -418,8 +418,7 @@ const controlSearchResults = async ()=>{
         await _modelJs.loadSearchResults(query);
         // Render results
         // console.log(model.state.search.results);
-        // resultsView.render(model.state.search.results);
-        _resultsViewJsDefault.default.render(_modelJs.getSearchResultsPage());
+        _resultsViewJsDefault.default.render(_modelJs.state.search.results);
     } catch (error) {
         console.log(error);
     }
@@ -481,7 +480,6 @@ const state = {
     search: {
         query: '',
         results: [],
-        page: 1,
         resultsPerPage: _configJs.RES_PER_PAGE
     }
 };
@@ -522,8 +520,7 @@ const loadSearchResults = async (query)=>{
         throw error;
     }
 };
-const getSearchResultsPage = (page = state.search.page)=>{
-    state.search.page = page;
+const getSearchResultsPage = (page)=>{
     const start = (page - 1) * state.search.resultsPerPage;
     const end = page * state.search.resultsPerPage;
     return state.search.results.slice(start, end);
@@ -606,7 +603,7 @@ class RecipeView extends _viewJsDefault.default {
 exports.default = new RecipeView();
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"367CR","url:../../img/icons.svg":"3t5dV","fractional":"5jzJt","./View.js":"48jhP"}],"3t5dV":[function(require,module,exports) {
-module.exports = require('./bundle-url').getBundleURL() + "icons.d4a14980.svg";
+module.exports = require('./bundle-url').getBundleURL() + "icons.HASH_REF_f6727c52d326b6f99dffa0b9d4a14980.svg";
 
 },{"./bundle-url":"3seVR"}],"3seVR":[function(require,module,exports) {
 "use strict";
@@ -1545,4 +1542,4 @@ try {
 
 },{}]},["1WnDs","3miIZ"], "3miIZ", "parcelRequirefade")
 
-//# sourceMappingURL=index.250b04c7.js.map
+//# sourceMappingURL=index.HASH_REF_6315ebf922a29661e8263da0250b04c7.js.map
