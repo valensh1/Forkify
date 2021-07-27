@@ -1,0 +1,31 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _viewJs = require("./View.js");
+var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+var _iconsSvg = require("url:../../img/icons.svg"); // When Parcel bundles our files it gets icons from the dist folder but our JavaScript is referencing files from our src-->img folders. This line of code here tells JavaScript to import our icons so it can read them from the dist folder. We use this icons variable throughout our markup variable below.
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class PaginationView extends _viewJsDefault.default {
+    _parentElement = document.querySelector('.pagination');
+    addHandlerClick(handler) {
+        this._parentElement.addEventListener('click', (event)=>{
+            const btn = event.target.closest('.btn--inline');
+            if (!btn) return;
+            const goToPage = +btn.dataset.goto; // Gets data property set in HTML
+            handler(goToPage);
+        });
+    }
+    _generateMarkup() {
+        const curPage = this._data.page; // Creation of variable curPage that is set to the this._data that was passed into the View.js tab via the render method as an argument. That same render method is calling on this generateMarkup() method and that's why we are able to use this._data and access the page key from that object to get the current page that the user is on
+        const numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage// Calculates the number of pages of recipe results that will be displayed on left side of page
+        );
+        // Page 1 and there are other pages
+        if (curPage === 1 && numPages > 1) return `\n            <button data-goto="${curPage + 1}" class="btn--inline pagination__btn--next">\n                <span>Page ${curPage + 1}</span>\n                <svg class="search__icon">\n                <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n                </svg>\n            </button>\n      `;
+        // Last page
+        if (curPage === numPages && numPages > 1) return `\n            <button data-goto="${curPage - 1}" class="btn--inline pagination__btn--prev">\n                <svg class="search__icon">\n                <use href="${_iconsSvgDefault.default}#icon-arrow-left"></use>\n                </svg>\n                <span>Page ${curPage - 1}</span>\n            </button>\n      `;
+        // Other page
+        if (curPage < numPages) return `\n      <button data-goto="${curPage - 1}" class="btn--inline pagination__btn--prev">\n            <svg class="search__icon">\n            <use href="${_iconsSvgDefault.default}#icon-arrow-left"></use>\n            </svg>\n            <span>Page ${curPage - 1}</span>\n     </button>\n    <button data-goto="${curPage + 1}" class="btn--inline pagination__btn--next">\n            <span>Page ${curPage + 1}</span>\n            <svg class="search__icon">\n            <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n            </svg>\n    </button>\n      `;
+        // Page 1, and there are NO other pages
+        return ``;
+    }
+}
+exports.default = new PaginationView();

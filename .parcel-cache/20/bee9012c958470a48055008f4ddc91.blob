@@ -1,0 +1,21 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+// Search View is the view on the left side of page which shows all different recipes related to food item user searched for
+class SearchView {
+    _parentEl = document.querySelector('.search');
+    getQuery() {
+        const query = this._parentEl.querySelector('.search__field').value; // Creation of variable query which is the food item user inputs in search bar.
+        this._clearInput(); // Invoking the clearInput method which clears user search terms after user is done entering his food item to search and hits enter or clicks on search button
+        return query; // returns a food item that user entered to search for recipes
+    }
+    _clearInput() {
+        this._parentEl.querySelector('.search__field').value = ''; // Clearing of search field after user hits enter or search button
+    }
+    addHandlerSearch(handler) {
+        this._parentEl.addEventListener('submit', (event)=>{
+            event.preventDefault();
+            handler();
+        });
+    }
+}
+exports.default = new SearchView();

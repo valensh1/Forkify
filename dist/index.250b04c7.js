@@ -399,46 +399,46 @@ module.hot.accept();
 // API Call
 const controlRecipes = async ()=>{
     try {
-        const id = window.location.hash.slice(1); // Creation of variable id that gets the hash tag id number out of a windows search bar.
+        const id = window.location.hash.slice(1); // Creation of variable id that gets the hash tag id number out of the windows address bar (place where you type in web address). Upon clicking a recipe result on left side this will trigger a id to be placed in this window address bar. The id gets placed there because it is the result of clicking on <a class="preview__link" href="#${result.id}"> in the resultsView.js file and when clicking on there it places the href # into the windows address bar and then we are able to use that id to then make our AJAX/API call for the recipe the user selected to be displayed in main part of page.
         console.log(id);
         if (!id) return; // Guard clause saying if there is no id then just return. This is a modern way to use if else statement without having to put tons of lines of code within blocks
         _recipeViewJsDefault.default.renderSpinner(); // Invoke the renderSpinner function.
         // Loading Recipe
-        await _modelJs.loadRecipe(id); // Calling the loadRecipe function and passing in the id from our model.js file. Since this is essentially an API/AJAX call and this returns a promise we need to await that promise.
+        await _modelJs.loadRecipe(id); // Calling the loadRecipe function and passing in the id which we got from our window.location.hash code above. Since this is essentially an API/AJAX call and this returns a promise we need to await that promise.
         // Rendering Recipe
-        _recipeViewJsDefault.default.render(_modelJs.state.recipe);
+        _recipeViewJsDefault.default.render(_modelJs.state.recipe); // Displays the recipe on main part of page which includes everything from id, publisher, sourceURL, image, servings, cooking time, ingredients, etc.
     } catch (error) {
         _recipeViewJsDefault.default.renderError();
     }
 };
 const controlSearchResults = async ()=>{
     try {
-        _resultsViewJsDefault.default.renderSpinner();
+        _resultsViewJsDefault.default.renderSpinner(); // Shows spinner when recipe results of search are loading on left side of page
         // Get search query
-        const query = _searchViewJsDefault.default.getQuery();
-        if (!query) return;
+        const query = _searchViewJsDefault.default.getQuery(); // Gets user search item from search field
+        if (!query) return; // Guard clause that if no search term entered by user then just return and it WILL NOT run lines of code below
         // Load search results
-        await _modelJs.loadSearchResults(query);
+        await _modelJs.loadSearchResults(query); // invokes the loadSearchResults method passing in the search item from user and then awaiting the API call with the list of recipes related to that search item entered by user
         // Render results
-        // console.log(model.state.search.results);
-        // resultsView.render(model.state.search.results);
-        _resultsViewJsDefault.default.render(_modelJs.getSearchResultsPage());
-        // Render initial pagination buttons
-        _paginationViewJsDefault.default.render(_modelJs.state.search);
+        _resultsViewJsDefault.default.render(_modelJs.getSearchResultsPage()); // Invokes render method which ultimately displays each recipe on left side of page with the pagination results (e.g. 10 recipe results per page)
+        // Render initial pagination buttons (pagination buttons are the previous and next buttons at bottom of recipe results on left side of screen)
+        _paginationViewJsDefault.default.render(_modelJs.state.search); // Invokes render method which ultimately displays the pagination buttons on the bottom of the recipe results so the user can scroll pages of recipe results on left side of page.
     } catch (error) {
         console.log(error);
     }
 };
+// Function that gets called from event listener when user clicks on a pagination button (previous page or next page) to see NEW recipe results on a page with new pagination buttons
 const controlPagination = (goToPage)=>{
     // Render NEW results
-    _resultsViewJsDefault.default.render(_modelJs.getSearchResultsPage(goToPage));
+    _resultsViewJsDefault.default.render(_modelJs.getSearchResultsPage(goToPage)); // Invokes render method which ultimately displays each recipe on left side of page with the pagination results (e.g. 10 recipe results per page)
     // Render NEW pagination buttons
-    _paginationViewJsDefault.default.render(_modelJs.state.search);
+    _paginationViewJsDefault.default.render(_modelJs.state.search); // Invokes render method which ultimately displays the pagination buttons on the bottom of the recipe results so the user can scroll pages of recipe results on left side of page.
 };
+// Initializes upon page load of the application the event listeners below. These are event listeners that are listening on the view page but the action/controls of the event listeners are handled here in the controller.js file. The views page essentially has the event listeners on them and then passes the event right back to controller to then do something with it.
 const init = ()=>{
-    _recipeViewJsDefault.default.addHandlerRender(controlRecipes); // Passing the controlRecipes function to the event listener that is in our recipeView file
-    _searchViewJsDefault.default.addHandlerSearch(controlSearchResults);
-    _paginationViewJsDefault.default.addHandlerClick(controlPagination);
+    _recipeViewJsDefault.default.addHandlerRender(controlRecipes); // Passing the controlRecipes function to the event listener that is in our recipeView file. This event listener basically listens for any recipe clicked from the search results on the left side of screen and then ultimately addHandlerRender() method runs that ultimately renders a recipe on to main part of page
+    _searchViewJsDefault.default.addHandlerSearch(controlSearchResults); // Ultimately this shows recipe results from search on left hand side of screen. Passes the conrolSearchResults method to the searchView addHandlerSearch method STRICTLY JUST TO HAVE THE EVENT LISTENER ON THE VIEWS PAGE BUT THE FUNCTIONALITY OF THE EVENT LISTENER IS ESSENTIALLY PASSED BACK TO CONTROLLER HERE AND IS CONTROLLED BY THE controlSearchResults METHOD ABOVE.
+    _paginationViewJsDefault.default.addHandlerClick(controlPagination); // Ultimately this shows the buttons to be displayed at bottom of recipe results on left hand side of screen
 };
 init(); // Invokes the init function above
 
@@ -488,6 +488,7 @@ parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage
 var _configJs = require("./config.js");
 var _helpersJs = require("./helpers.js");
 const state = {
+    // Creation of variable state that holds ALL OUR DATA FOR APPLICATION
     recipe: {
     },
     search: {
@@ -499,8 +500,8 @@ const state = {
 };
 const loadRecipe = async (id)=>{
     try {
-        const data = await _helpersJs.getJSON(`${_configJs.API_URL}${id}`);
-        const { recipe  } = data.data; // Destucture of data object received back on the recipe key
+        const data = await _helpersJs.getJSON(`${_configJs.API_URL}${id}`); // AJAX/API call based upon id passed into method which was taken from the hash in the browser window and then turned into JavaScript object via the getJSON method and saved into a variable called data. Must await data since this line of code returns a promise and we need the results of that Promise.
+        const { recipe  } = data.data; // Destructure of data object received back on the recipe key
         state.recipe = {
             // Creation of new recipe object because the data object returned has a lot of underscores in names and we don't want that in our variable names; Reassigning our recipte variable we created above and using destructured recipe variable to retrieve key/value pairs.
             id: recipe.title,
@@ -519,10 +520,11 @@ const loadRecipe = async (id)=>{
 };
 const loadSearchResults = async (query)=>{
     try {
-        state.search.query = query;
-        const data = await _helpersJs.getJSON(`${_configJs.API_URL}?search=${query}`);
-        console.log(data);
+        state.search.query = query; // Set variable search which is our data model and set the query to the food item entered in search bar by user
+        const data = await _helpersJs.getJSON(`${_configJs.API_URL}?search=${query}`); // Creation of a variable called data which awaits the API call of the search term entered in by user and then performs getJSON method on the item returned from API call to turn it into a viable JavaScript object; API_URL comes from the config.js file and it is the address for which the AJAX/API uses to retrieve the recipe data
+        console.log(data); // Prints the data returned from the API call
         state.search.results = data.data.recipes.map((rec)=>{
+            // Sets the results key in the state variable (our Model that holds all our data) and takes the recipe results for the searched food item entered in by user and returns an object that contains the id, title, publisher and image for all returned recipes
             return {
                 id: rec.id,
                 title: rec.title,
@@ -536,10 +538,11 @@ const loadSearchResults = async (query)=>{
     }
 };
 const getSearchResultsPage = (page = state.search.page)=>{
-    state.search.page = page;
-    const start = (page - 1) * state.search.resultsPerPage;
-    const end = page * state.search.resultsPerPage;
-    return state.search.results.slice(start, end);
+    // Method that takes in a search page as an argument (default search page is set to our Model in its original state which is page 1)
+    state.search.page = page; // Sets our model with the current page
+    const start = (page - 1) * state.search.resultsPerPage; // Gets the starting recipe results to show by taking say page 3 subtracting 1 and multiplying by results per page which in this case is 10; (3-1) * 10 = 20
+    const end = page * state.search.resultsPerPage; // Gets the ending recipe results to show by taking say page 3 and multiplying by results per page which in this case is 10; 3 * 10 = 30
+    return state.search.results.slice(start, end); // This will return an array that contains the start and finish recipe results which if current page is 3 then it will show results 20-30 as calculated above.
 };
 
 },{"./config.js":"6pr2F","./helpers.js":"581KF","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}],"6pr2F":[function(require,module,exports) {
@@ -601,13 +604,14 @@ class RecipeView extends _viewJsDefault.default {
     _message = '';
     // Handler/Event Listeners should listen for events on view page and then send back data to our controller since the controller is supposed to handle our application
     addHandlerRender(handler) {
+        // Receives controlRecipes from the controller.js file as an argument and then for each id in that handler argument the code below runs the handler function which includes the hashchange and load listeners
         [
             'hashchange',
             'load'
         ].forEach((ev)=>window.addEventListener(ev, handler)
         ); // Add event listener for any change to the hash symbol change in the search bar in Google Chrome; Load event add event listener for any loading of the page we want to run the showRecipe method.
-    // window.addEventListener('hashchange', controlRecipes);
-    // window.addEventListener('load', controlRecipes);
+    // window.addEventListener('hashchange', controlRecipes); // Easier way to combine both of these event listeners into one via line of code directly above.
+    // window.addEventListener('load', controlRecipes); // Easier way to combine both of these event listeners into one via line of code (2 lines above)
     }
     _generateMarkup() {
         return `\n        <figure class="recipe__fig">\n              <img src=${this._data.image} alt=${this._data.title} class="recipe__img" />\n              <h1 class="recipe__title">\n                <span>${this._data.id}</span>\n              </h1>\n            </figure>\n\n            <div class="recipe__details">\n              <div class="recipe__info">\n                <svg class="recipe__info-icon">\n                  <use href="${_iconsSvgDefault.default}#icon-clock"></use>\n                </svg>\n                <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>\n                <span class="recipe__info-text">minutes</span>\n              </div>\n              <div class="recipe__info">\n                <svg class="recipe__info-icon">\n                  <use href="${_iconsSvgDefault.default}#icon-users"></use>\n                </svg>\n                <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>\n                <span class="recipe__info-text">servings</span>\n\n                <div class="recipe__info-buttons">\n                  <button class="btn--tiny btn--increase-servings">\n                    <svg>\n                      <use href="${_iconsSvgDefault.default}#icon-minus-circle"></use>\n                    </svg>\n                  </button>\n                  <button class="btn--tiny btn--increase-servings">\n                    <svg>\n                      <use href="${_iconsSvgDefault.default}#icon-plus-circle"></use>\n                    </svg>\n                  </button>\n                </div>\n              </div>\n\n              <div class="recipe__user-generated">\n              </div>\n              <button class="btn--round">\n                <svg class="">\n                  <use href="${_iconsSvgDefault.default}#icon-bookmark-fill"></use>\n                </svg>\n              </button>\n            </div>\n\n            <div class="recipe__ingredients">\n              <h2 class="heading--2">Recipe ingredients</h2>\n              <ul class="recipe__ingredient-list">\n              ${this._data.ingredients.map(this._generateMarkupIngredient).join('')}\n            </div>\n\n            <div class="recipe__directions">\n              <h2 class="heading--2">How to cook it</h2>\n              <p class="recipe__directions-text">\n                This recipe was carefully designed and tested by\n                <span class="recipe__publisher">${this._data.publisher}</span>. Please check out\n                directions at their website.\n              </p>\n              <a\n                class="btn--small recipe__btn"\n                href=${this._data.sourceURL}\n                target="_blank"\n              >\n                <span>Directions</span>\n                <svg class="search__icon">\n                  <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n                </svg>\n              </a>\n            </div>\n    `;
@@ -627,14 +631,15 @@ class View {
     _data;
     render(data) {
         if (!data || Array.isArray(data) && data.length === 0) return this.renderError(); // IF no data OR data is an array AND data.length = 0 then render an error message
-        this._data = data;
-        const markup = this._generateMarkup();
-        this._clear();
-        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+        this._data = data; // Sets data which is the sliced recipe results from left side of page (data sliced for pagination - e.g. 10 results per page)
+        const markup = this._generateMarkup(); // Invokes the generateMarkup() method which takes the sliced pagination data (e.g. 10 recipe results on left side of page) and then passes that into a generateMarkupPreview() method which ultimately gets all the html to display on page which is the recipes to display on left side of page or pagination buttons to display (buttons to go to next page or previous page). This will then be used to pass into the insertAdjacentHtml method below to display in DOM.
+        this._clear(); // Clears out any previous recipe results that were displaying on left side of page so that we can show new results
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts each recipe (sliced for pagination e.g. 10 results per page) on left side of page.
     }
     _clear() {
-        this._parentElement.innerHTML = '';
+        this._parentElement.innerHTML = ''; // Clears parent elements HTML so can display new recipe results
     }
+    // Function used to display spinner when waiting for results from API calls such as search results or for final recipe results upon clicking on one of the recipes
     renderSpinner = ()=>{
         const markup = `\n            <div class="spinner">\n            <svg>\n              <use href="${_iconsSvgDefault.default}#icon-loader"></use>\n            </svg>\n          </div> \n        `;
         this._clear(); // Clears the text of anything inside parent element passed into the function
@@ -940,20 +945,22 @@ module.exports.Fraction = Fraction;
 },{}],"3rYQ6":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+// Search View is the view on the left side of page which shows all different recipes related to food item user searched for
 class SearchView {
     _parentEl = document.querySelector('.search');
     getQuery() {
-        const query = this._parentEl.querySelector('.search__field').value;
-        this._clearInput();
-        return query;
+        const query = this._parentEl.querySelector('.search__field').value; // Creation of variable query which is the food item user inputs in search bar.
+        this._clearInput(); // Invoking the clearInput method which clears user search terms after user is done entering his food item to search and hits enter or clicks on search button
+        return query; // returns a food item that user entered to search for recipes
     }
     _clearInput() {
-        this._parentEl.querySelector('.search__field').value = '';
+        this._parentEl.querySelector('.search__field').value = ''; // Clearing of search field after user hits enter or search button
     }
+    // This is the event listener on search field that listens for when a user enters data in search field and hits ENTER or clicks on search button; Argument passed into this event listener is a function created on the controller.js file that then passes the functionality back to the controller by the line of code represented by handler() which is the last line of code in this method. This method is only here because it makes sense to put the event listener on the view and pass the functionality of when user submits their search term back to the controller.
     addHandlerSearch(handler) {
         this._parentEl.addEventListener('submit', (event)=>{
-            event.preventDefault();
-            handler();
+            event.preventDefault(); // Prevent reloading of page upon user clicking on a recipe
+            handler(); // Passes functionality back to controller (controller.js file) and the controlSearchResults method
         });
     }
 }
@@ -1563,6 +1570,7 @@ var _viewJs = require("./View.js");
 var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
 var _iconsSvg = require("url:../../img/icons.svg"); // When Parcel bundles our files it gets icons from the dist folder but our JavaScript is referencing files from our src-->img folders. This line of code here tells JavaScript to import our icons so it can read them from the dist folder. We use this icons variable throughout our markup variable below.
 var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+// Pagination is the Page Buttons to be displayed at the bottom of the recipe results on left side of screen
 class PaginationView extends _viewJsDefault.default {
     _parentElement = document.querySelector('.pagination');
     addHandlerClick(handler) {
@@ -1574,15 +1582,16 @@ class PaginationView extends _viewJsDefault.default {
         });
     }
     _generateMarkup() {
-        const curPage = this._data.page;
-        const numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
-        // Page 1 and there are other pages
+        const curPage = this._data.page; // Creation of variable curPage that is set to the this._data that was passed into the View.js tab via the render method as an argument. That same render method is calling on this generateMarkup() method and that's why we are able to use this._data and access the page key from that object to get the current page that the user is on
+        const numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage// Calculates the number of pages of recipe results that will be displayed on left side of page
+        );
+        // Page 1 and there are other pages - Displays pagination buttons for ONLY next page since this scenario is for users on Page 1 and so the only button that will be displayed is Page 2 button
         if (curPage === 1 && numPages > 1) return `\n            <button data-goto="${curPage + 1}" class="btn--inline pagination__btn--next">\n                <span>Page ${curPage + 1}</span>\n                <svg class="search__icon">\n                <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n                </svg>\n            </button>\n      `;
-        // Last page
+        // Last page - Will display pagination button of ONLY the previous page since the user is on the last page.
         if (curPage === numPages && numPages > 1) return `\n            <button data-goto="${curPage - 1}" class="btn--inline pagination__btn--prev">\n                <svg class="search__icon">\n                <use href="${_iconsSvgDefault.default}#icon-arrow-left"></use>\n                </svg>\n                <span>Page ${curPage - 1}</span>\n            </button>\n      `;
-        // Other page
+        // Other page - User is on NEITHER the first page of the last page so there are buttons for both PREVIOUS PAGE and NEXT PAGE
         if (curPage < numPages) return `\n      <button data-goto="${curPage - 1}" class="btn--inline pagination__btn--prev">\n            <svg class="search__icon">\n            <use href="${_iconsSvgDefault.default}#icon-arrow-left"></use>\n            </svg>\n            <span>Page ${curPage - 1}</span>\n     </button>\n    <button data-goto="${curPage + 1}" class="btn--inline pagination__btn--next">\n            <span>Page ${curPage + 1}</span>\n            <svg class="search__icon">\n            <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n            </svg>\n    </button>\n      `;
-        // Page 1, and there are NO other pages
+        // Page 1, and there are NO other pages - No page buttons needed because only 1 page of recipe results
         return ``;
     }
 }
