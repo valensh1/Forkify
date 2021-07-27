@@ -389,10 +389,13 @@ var _searchViewJs = require("./views/searchView.js");
 var _searchViewJsDefault = parcelHelpers.interopDefault(_searchViewJs);
 var _resultsViewJs = require("./views/resultsView.js");
 var _resultsViewJsDefault = parcelHelpers.interopDefault(_resultsViewJs);
+var _paginationViewJs = require("./views/paginationView.js");
+var _paginationViewJsDefault = parcelHelpers.interopDefault(_paginationViewJs);
 // import 'core-js/stable';  // Polyfilling which is basically making sure some features work in older browsers; Pollyfills everything other than async/await
 var _regeneratorRuntime = require("regenerator-runtime"); // Polyfilling which is basically making sure some features work in older browsers; Pollyfills async/await
 // Jonas Recipe API Documentation - https://forkify-api.herokuapp.com/v2
-if (module.hot) module.hot.accept();
+if (module.hot) // Code here enables the hot module replacement, which reloads the modules that changed without refreshing the whole website. This is code strictly for Parcel and JavaScript wouldn't understand this by itself without Parcel installed.
+module.hot.accept();
 // API Call
 const controlRecipes = async ()=>{
     try {
@@ -420,17 +423,26 @@ const controlSearchResults = async ()=>{
         // console.log(model.state.search.results);
         // resultsView.render(model.state.search.results);
         _resultsViewJsDefault.default.render(_modelJs.getSearchResultsPage());
+        // Render initial pagination buttons
+        _paginationViewJsDefault.default.render(_modelJs.state.search);
     } catch (error) {
         console.log(error);
     }
 };
+const controlPagination = (goToPage)=>{
+    // Render NEW results
+    _resultsViewJsDefault.default.render(_modelJs.getSearchResultsPage(goToPage));
+    // Render NEW pagination buttons
+    _paginationViewJsDefault.default.render(_modelJs.state.search);
+};
 const init = ()=>{
     _recipeViewJsDefault.default.addHandlerRender(controlRecipes); // Passing the controlRecipes function to the event listener that is in our recipeView file
     _searchViewJsDefault.default.addHandlerSearch(controlSearchResults);
+    _paginationViewJsDefault.default.addHandlerClick(controlPagination);
 };
 init(); // Invokes the init function above
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"367CR","./model.js":"1hp6y","./views/recipeView.js":"9e6b9","./views/searchView.js":"3rYQ6","./views/resultsView.js":"17PYN","regenerator-runtime":"62Qib"}],"367CR":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"367CR","./model.js":"1hp6y","./views/recipeView.js":"9e6b9","./views/searchView.js":"3rYQ6","./views/resultsView.js":"17PYN","regenerator-runtime":"62Qib","./views/paginationView.js":"5u5Fw"}],"367CR":[function(require,module,exports) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -490,6 +502,7 @@ const loadRecipe = async (id)=>{
         const data = await _helpersJs.getJSON(`${_configJs.API_URL}${id}`);
         const { recipe  } = data.data; // Destucture of data object received back on the recipe key
         state.recipe = {
+            // Creation of new recipe object because the data object returned has a lot of underscores in names and we don't want that in our variable names; Reassigning our recipte variable we created above and using destructured recipe variable to retrieve key/value pairs.
             id: recipe.title,
             publisher: recipe.publisher,
             sourceURL: recipe.source_url,
@@ -529,7 +542,7 @@ const getSearchResultsPage = (page = state.search.page)=>{
     return state.search.results.slice(start, end);
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"367CR","./config.js":"6pr2F","./helpers.js":"581KF"}],"6pr2F":[function(require,module,exports) {
+},{"./config.js":"6pr2F","./helpers.js":"581KF","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}],"6pr2F":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "API_URL", ()=>API_URL
@@ -572,7 +585,7 @@ const getJSON = async (url)=>{
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"367CR","./config":"6pr2F"}],"9e6b9":[function(require,module,exports) {
+},{"./config":"6pr2F","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}],"9e6b9":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _viewJs = require("./View.js");
@@ -605,7 +618,42 @@ class RecipeView extends _viewJsDefault.default {
 }
 exports.default = new RecipeView();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"367CR","url:../../img/icons.svg":"3t5dV","fractional":"5jzJt","./View.js":"48jhP"}],"3t5dV":[function(require,module,exports) {
+},{"./View.js":"48jhP","url:../../img/icons.svg":"3t5dV","fractional":"5jzJt","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}],"48jhP":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _iconsSvg = require("url:../../img/icons.svg"); // When Parcel bundles our files it gets icons from the dist folder but our JavaScript is referencing files from our src-->img folders. This line of code here tells JavaScript to import our icons so it can read them from the dist folder. We use this icons variable throughout our markup variable below.
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class View {
+    _data;
+    render(data) {
+        if (!data || Array.isArray(data) && data.length === 0) return this.renderError(); // IF no data OR data is an array AND data.length = 0 then render an error message
+        this._data = data;
+        const markup = this._generateMarkup();
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    _clear() {
+        this._parentElement.innerHTML = '';
+    }
+    renderSpinner = ()=>{
+        const markup = `\n            <div class="spinner">\n            <svg>\n              <use href="${_iconsSvgDefault.default}#icon-loader"></use>\n            </svg>\n          </div> \n        `;
+        this._clear(); // Clears the text of anything inside parent element passed into the function
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
+    };
+    renderError(message = this._errorMessage) {
+        const markup = `\n          <div class="error">\n            <div>\n                <svg>\n                <use href="${_iconsSvgDefault.default}#icon-alert-triangle"></use>\n                </svg>\n            </div>\n            <p>${message}</p>\n        </div>\n          `;
+        this._clear(); // Clears the text of anything inside parent element passed into the function
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
+    }
+    renderMessage(message = this._message) {
+        const markup = `\n        <div class="message">\n            <div>\n            <svg>\n                <use href="${_iconsSvgDefault.default}#icon-smile"></use>\n            </svg>\n            </div>\n            <p>${message}</p>   \n      </div>\n        `;
+        this._clear(); // Clears the text of anything inside parent element passed into the function
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
+    }
+}
+exports.default = View;
+
+},{"url:../../img/icons.svg":"3t5dV","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}],"3t5dV":[function(require,module,exports) {
 module.exports = require('./bundle-url').getBundleURL() + "icons.d4a14980.svg";
 
 },{"./bundle-url":"3seVR"}],"3seVR":[function(require,module,exports) {
@@ -889,42 +937,7 @@ Fraction.primeFactors = function(n) {
 };
 module.exports.Fraction = Fraction;
 
-},{}],"48jhP":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _iconsSvg = require("url:../../img/icons.svg"); // When Parcel bundles our files it gets icons from the dist folder but our JavaScript is referencing files from our src-->img folders. This line of code here tells JavaScript to import our icons so it can read them from the dist folder. We use this icons variable throughout our markup variable below.
-var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
-class View {
-    _data;
-    render(data) {
-        if (!data || Array.isArray(data) && data.length === 0) return this.renderError(); // IF no data OR data is an array AND data.length = 0 then render an error message
-        this._data = data;
-        const markup = this._generateMarkup();
-        this._clear();
-        this._parentElement.insertAdjacentHTML('afterbegin', markup);
-    }
-    _clear() {
-        this._parentElement.innerHTML = '';
-    }
-    renderSpinner = ()=>{
-        const markup = `\n            <div class="spinner">\n            <svg>\n              <use href="${_iconsSvgDefault.default}#icon-loader"></use>\n            </svg>\n          </div> \n        `;
-        this._clear(); // Clears the text of anything inside parent element passed into the function
-        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
-    };
-    renderError(message = this._errorMessage) {
-        const markup = `\n          <div class="error">\n            <div>\n                <svg>\n                <use href="${_iconsSvgDefault.default}#icon-alert-triangle"></use>\n                </svg>\n            </div>\n            <p>${message}</p>\n        </div>\n          `;
-        this._clear(); // Clears the text of anything inside parent element passed into the function
-        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
-    }
-    renderMessage(message = this._message) {
-        const markup = `\n        <div class="message">\n            <div>\n            <svg>\n                <use href="${_iconsSvgDefault.default}#icon-smile"></use>\n            </svg>\n            </div>\n            <p>${message}</p>   \n      </div>\n        `;
-        this._clear(); // Clears the text of anything inside parent element passed into the function
-        this._parentElement.insertAdjacentHTML('afterbegin', markup); // Inserts markup variable into the parent element that was passed into the function
-    }
-}
-exports.default = View;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"367CR","url:../../img/icons.svg":"3t5dV"}],"3rYQ6":[function(require,module,exports) {
+},{}],"3rYQ6":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 class SearchView {
@@ -967,7 +980,7 @@ class ResultsView extends _viewJsDefault.default {
 }
 exports.default = new ResultsView();
 
-},{"./View.js":"48jhP","@parcel/transformer-js/src/esmodule-helpers.js":"367CR","url:../../img/icons.svg":"3t5dV"}],"62Qib":[function(require,module,exports) {
+},{"url:../../img/icons.svg":"3t5dV","./View.js":"48jhP","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}],"62Qib":[function(require,module,exports) {
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -1543,6 +1556,38 @@ try {
     Function("r", "regeneratorRuntime = r")(runtime);
 }
 
-},{}]},["1WnDs","3miIZ"], "3miIZ", "parcelRequirefade")
+},{}],"5u5Fw":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _viewJs = require("./View.js");
+var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+var _iconsSvg = require("url:../../img/icons.svg"); // When Parcel bundles our files it gets icons from the dist folder but our JavaScript is referencing files from our src-->img folders. This line of code here tells JavaScript to import our icons so it can read them from the dist folder. We use this icons variable throughout our markup variable below.
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class PaginationView extends _viewJsDefault.default {
+    _parentElement = document.querySelector('.pagination');
+    addHandlerClick(handler) {
+        this._parentElement.addEventListener('click', (event)=>{
+            const btn = event.target.closest('.btn--inline');
+            if (!btn) return;
+            const goToPage = +btn.dataset.goto; // Gets data property set in HTML
+            handler(goToPage);
+        });
+    }
+    _generateMarkup() {
+        const curPage = this._data.page;
+        const numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
+        // Page 1 and there are other pages
+        if (curPage === 1 && numPages > 1) return `\n            <button data-goto="${curPage + 1}" class="btn--inline pagination__btn--next">\n                <span>Page ${curPage + 1}</span>\n                <svg class="search__icon">\n                <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n                </svg>\n            </button>\n      `;
+        // Last page
+        if (curPage === numPages && numPages > 1) return `\n            <button data-goto="${curPage - 1}" class="btn--inline pagination__btn--prev">\n                <svg class="search__icon">\n                <use href="${_iconsSvgDefault.default}#icon-arrow-left"></use>\n                </svg>\n                <span>Page ${curPage - 1}</span>\n            </button>\n      `;
+        // Other page
+        if (curPage < numPages) return `\n      <button data-goto="${curPage - 1}" class="btn--inline pagination__btn--prev">\n            <svg class="search__icon">\n            <use href="${_iconsSvgDefault.default}#icon-arrow-left"></use>\n            </svg>\n            <span>Page ${curPage - 1}</span>\n     </button>\n    <button data-goto="${curPage + 1}" class="btn--inline pagination__btn--next">\n            <span>Page ${curPage + 1}</span>\n            <svg class="search__icon">\n            <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n            </svg>\n    </button>\n      `;
+        // Page 1, and there are NO other pages
+        return ``;
+    }
+}
+exports.default = new PaginationView();
+
+},{"./View.js":"48jhP","url:../../img/icons.svg":"3t5dV","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}]},["1WnDs","3miIZ"], "3miIZ", "parcelRequirefade")
 
 //# sourceMappingURL=index.250b04c7.js.map
