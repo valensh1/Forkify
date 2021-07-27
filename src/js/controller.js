@@ -63,9 +63,17 @@ const controlPagination = goToPage => {
   paginationView.render(model.state.search); // Invokes render method which ultimately displays the pagination buttons on the bottom of the recipe results so the user can scroll pages of recipe results on left side of page.
 };
 
+const controlServings = newServings => {
+  // Update the recipe servings (in state)
+  model.updateServings(newServings);
+  // Update the recipe view
+  recipeView.render(model.state.recipe);
+};
+
 // Initializes upon page load of the application the event listeners below. These are event listeners that are listening on the view page but the action/controls of the event listeners are handled here in the controller.js file. The views page essentially has the event listeners on them and then passes the event right back to controller to then do something with it.
 const init = () => {
   recipeView.addHandlerRender(controlRecipes); // Passing the controlRecipes function to the event listener that is in our recipeView file. This event listener basically listens for any recipe clicked from the search results on the left side of screen and then ultimately addHandlerRender() method runs that ultimately renders a recipe on to main part of page
+  recipeView.addHandlerUpdateServings(controlServings);
   searchView.addHandlerSearch(controlSearchResults); // Ultimately this shows recipe results from search on left hand side of screen. Passes the conrolSearchResults method to the searchView addHandlerSearch method STRICTLY JUST TO HAVE THE EVENT LISTENER ON THE VIEWS PAGE BUT THE FUNCTIONALITY OF THE EVENT LISTENER IS ESSENTIALLY PASSED BACK TO CONTROLLER HERE AND IS CONTROLLED BY THE controlSearchResults METHOD ABOVE.
   paginationView.addHandlerClick(controlPagination); // Ultimately this shows the buttons to be displayed at bottom of recipe results on left hand side of screen
 };

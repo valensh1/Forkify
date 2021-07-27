@@ -633,8 +633,8 @@ class RecipeView extends _viewJsDefault.default {
             const btn = event.target.closest('.btn--update-servings');
             if (!btn) return;
             console.log(btn);
-            const { updateTo  } = btn.dataset; // Convert dataset in HTML (data-update-to="${this._data.servings - 1} from generateMarkup() method below to a number. + sign in front of btn.dataset is what converts the string from the dataset into a number.
-            if (+updateTo > 0) handler(+updateTo); // Pass the argument updateTo back into the handler which is the function passed into this method which essentially brings control of code back to controller.
+            const updateTo = +btn.dataset.updateTo; // Convert dataset in HTML (data-update-to="${this._data.servings - 1} from generateMarkup() method below to a number. + sign in front of btn.dataset is what converts the string from the dataset into a number.
+            handler(updateTo); // Pass the argument updateTo back into the handler which is the function passed into this method which essentially brings control of code back to controller.
         });
     }
     _generateMarkup() {
@@ -683,7 +683,7 @@ class View {
 exports.default = View;
 
 },{"url:../../img/icons.svg":"3t5dV","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}],"3t5dV":[function(require,module,exports) {
-module.exports = require('./bundle-url').getBundleURL() + "icons.d4a14980.svg";
+module.exports = require('./bundle-url').getBundleURL() + "icons.HASH_REF_f6727c52d326b6f99dffa0b9d4a14980.svg";
 
 },{"./bundle-url":"3seVR"}],"3seVR":[function(require,module,exports) {
 "use strict";
@@ -1623,4 +1623,4 @@ exports.default = new PaginationView();
 
 },{"./View.js":"48jhP","url:../../img/icons.svg":"3t5dV","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}]},["1WnDs","3miIZ"], "3miIZ", "parcelRequirefade")
 
-//# sourceMappingURL=index.250b04c7.js.map
+//# sourceMappingURL=index.HASH_REF_6315ebf922a29661e8263da0250b04c7.js.map

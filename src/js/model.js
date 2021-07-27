@@ -64,3 +64,11 @@ export const getSearchResultsPage = (page = state.search.page) => {
   const end = page * state.search.resultsPerPage; // Gets the ending recipe results to show by taking say page 3 and multiplying by results per page which in this case is 10; 3 * 10 = 30
   return state.search.results.slice(start, end); // This will return an array that contains the start and finish recipe results which if current page is 3 then it will show results 20-30 as calculated above.
 };
+
+export const updateServings = newServings => {
+  state.recipe.ingredients.forEach(ing => {
+    ing.quantity = ing.quantity * (newServings / state.recipe.servings); // New Quantity = Old quantity * (new servings / old servings)
+  });
+
+  state.recipe.servings = newServings;
+};

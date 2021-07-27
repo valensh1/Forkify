@@ -434,16 +434,11 @@ const controlPagination = (goToPage)=>{
     // Render NEW pagination buttons
     _paginationViewJsDefault.default.render(_modelJs.state.search); // Invokes render method which ultimately displays the pagination buttons on the bottom of the recipe results so the user can scroll pages of recipe results on left side of page.
 };
-const controlServings = (newServings)=>{
-    // Update the recipe servings (in state)
-    _modelJs.updateServings(newServings);
-    // Update the recipe view
-    _recipeViewJsDefault.default.render(_modelJs.state.recipe);
+const controlServings = ()=>{
 };
 // Initializes upon page load of the application the event listeners below. These are event listeners that are listening on the view page but the action/controls of the event listeners are handled here in the controller.js file. The views page essentially has the event listeners on them and then passes the event right back to controller to then do something with it.
 const init = ()=>{
     _recipeViewJsDefault.default.addHandlerRender(controlRecipes); // Passing the controlRecipes function to the event listener that is in our recipeView file. This event listener basically listens for any recipe clicked from the search results on the left side of screen and then ultimately addHandlerRender() method runs that ultimately renders a recipe on to main part of page
-    _recipeViewJsDefault.default.addHandlerUpdateServings(controlServings);
     _searchViewJsDefault.default.addHandlerSearch(controlSearchResults); // Ultimately this shows recipe results from search on left hand side of screen. Passes the conrolSearchResults method to the searchView addHandlerSearch method STRICTLY JUST TO HAVE THE EVENT LISTENER ON THE VIEWS PAGE BUT THE FUNCTIONALITY OF THE EVENT LISTENER IS ESSENTIALLY PASSED BACK TO CONTROLLER HERE AND IS CONTROLLED BY THE controlSearchResults METHOD ABOVE.
     _paginationViewJsDefault.default.addHandlerClick(controlPagination); // Ultimately this shows the buttons to be displayed at bottom of recipe results on left hand side of screen
 };
@@ -491,8 +486,6 @@ parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe
 parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults
 );
 parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage
-);
-parcelHelpers.export(exports, "updateServings", ()=>updateServings
 );
 var _configJs = require("./config.js");
 var _helpersJs = require("./helpers.js");
@@ -552,12 +545,6 @@ const getSearchResultsPage = (page = state.search.page)=>{
     const start = (page - 1) * state.search.resultsPerPage; // Gets the starting recipe results to show by taking say page 3 subtracting 1 and multiplying by results per page which in this case is 10; (3-1) * 10 = 20
     const end = page * state.search.resultsPerPage; // Gets the ending recipe results to show by taking say page 3 and multiplying by results per page which in this case is 10; 3 * 10 = 30
     return state.search.results.slice(start, end); // This will return an array that contains the start and finish recipe results which if current page is 3 then it will show results 20-30 as calculated above.
-};
-const updateServings = (newServings)=>{
-    state.recipe.ingredients.forEach((ing)=>{
-        ing.quantity = ing.quantity * (newServings / state.recipe.servings); // New Quantity = Old quantity * (new servings / old servings)
-    });
-    state.recipe.servings = newServings;
 };
 
 },{"./config.js":"6pr2F","./helpers.js":"581KF","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}],"6pr2F":[function(require,module,exports) {
@@ -628,17 +615,8 @@ class RecipeView extends _viewJsDefault.default {
     // window.addEventListener('hashchange', controlRecipes); // Easier way to combine both of these event listeners into one via line of code directly above.
     // window.addEventListener('load', controlRecipes); // Easier way to combine both of these event listeners into one via line of code (2 lines above)
     }
-    addHandlerUpdateServings(handler) {
-        this._parentElement.addEventListener('click', (event)=>{
-            const btn = event.target.closest('.btn--update-servings');
-            if (!btn) return;
-            console.log(btn);
-            const { updateTo  } = btn.dataset; // Convert dataset in HTML (data-update-to="${this._data.servings - 1} from generateMarkup() method below to a number. + sign in front of btn.dataset is what converts the string from the dataset into a number.
-            if (+updateTo > 0) handler(+updateTo); // Pass the argument updateTo back into the handler which is the function passed into this method which essentially brings control of code back to controller.
-        });
-    }
     _generateMarkup() {
-        return `\n        <figure class="recipe__fig">\n              <img src=${this._data.image} alt=${this._data.title} class="recipe__img" />\n              <h1 class="recipe__title">\n                <span>${this._data.id}</span>\n              </h1>\n            </figure>\n\n            <div class="recipe__details">\n              <div class="recipe__info">\n                <svg class="recipe__info-icon">\n                  <use href="${_iconsSvgDefault.default}#icon-clock"></use>\n                </svg>\n                <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>\n                <span class="recipe__info-text">minutes</span>\n              </div>\n              <div class="recipe__info">\n                <svg class="recipe__info-icon">\n                  <use href="${_iconsSvgDefault.default}#icon-users"></use>\n                </svg>\n                <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>\n                <span class="recipe__info-text">servings</span>\n\n                <div class="recipe__info-buttons">\n                  <button class="btn--tiny btn--update-servings" data-update-to="${this._data.servings - 1}">\n                    <svg>\n                      <use href="${_iconsSvgDefault.default}#icon-minus-circle"></use>\n                    </svg>\n                  </button>\n                  <button class="btn--tiny btn--update-servings" data-update-to="${this._data.servings + 1}">\n                    <svg>\n                      <use href="${_iconsSvgDefault.default}#icon-plus-circle"></use>\n                    </svg>\n                  </button>\n                </div>\n              </div>\n\n              <div class="recipe__user-generated">\n              </div>\n              <button class="btn--round">\n                <svg class="">\n                  <use href="${_iconsSvgDefault.default}#icon-bookmark-fill"></use>\n                </svg>\n              </button>\n            </div>\n\n            <div class="recipe__ingredients">\n              <h2 class="heading--2">Recipe ingredients</h2>\n              <ul class="recipe__ingredient-list">\n              ${this._data.ingredients.map(this._generateMarkupIngredient).join('')}\n            </div>\n\n            <div class="recipe__directions">\n              <h2 class="heading--2">How to cook it</h2>\n              <p class="recipe__directions-text">\n                This recipe was carefully designed and tested by\n                <span class="recipe__publisher">${this._data.publisher}</span>. Please check out\n                directions at their website.\n              </p>\n              <a\n                class="btn--small recipe__btn"\n                href=${this._data.sourceURL}\n                target="_blank"\n              >\n                <span>Directions</span>\n                <svg class="search__icon">\n                  <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n                </svg>\n              </a>\n            </div>\n    `;
+        return `\n        <figure class="recipe__fig">\n              <img src=${this._data.image} alt=${this._data.title} class="recipe__img" />\n              <h1 class="recipe__title">\n                <span>${this._data.id}</span>\n              </h1>\n            </figure>\n\n            <div class="recipe__details">\n              <div class="recipe__info">\n                <svg class="recipe__info-icon">\n                  <use href="${_iconsSvgDefault.default}#icon-clock"></use>\n                </svg>\n                <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>\n                <span class="recipe__info-text">minutes</span>\n              </div>\n              <div class="recipe__info">\n                <svg class="recipe__info-icon">\n                  <use href="${_iconsSvgDefault.default}#icon-users"></use>\n                </svg>\n                <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>\n                <span class="recipe__info-text">servings</span>\n\n                <div class="recipe__info-buttons">\n                  <button class="btn--tiny btn--increase-servings">\n                    <svg>\n                      <use href="${_iconsSvgDefault.default}#icon-minus-circle"></use>\n                    </svg>\n                  </button>\n                  <button class="btn--tiny btn--increase-servings">\n                    <svg>\n                      <use href="${_iconsSvgDefault.default}#icon-plus-circle"></use>\n                    </svg>\n                  </button>\n                </div>\n              </div>\n\n              <div class="recipe__user-generated">\n              </div>\n              <button class="btn--round">\n                <svg class="">\n                  <use href="${_iconsSvgDefault.default}#icon-bookmark-fill"></use>\n                </svg>\n              </button>\n            </div>\n\n            <div class="recipe__ingredients">\n              <h2 class="heading--2">Recipe ingredients</h2>\n              <ul class="recipe__ingredient-list">\n              ${this._data.ingredients.map(this._generateMarkupIngredient).join('')}\n            </div>\n\n            <div class="recipe__directions">\n              <h2 class="heading--2">How to cook it</h2>\n              <p class="recipe__directions-text">\n                This recipe was carefully designed and tested by\n                <span class="recipe__publisher">${this._data.publisher}</span>. Please check out\n                directions at their website.\n              </p>\n              <a\n                class="btn--small recipe__btn"\n                href=${this._data.sourceURL}\n                target="_blank"\n              >\n                <span>Directions</span>\n                <svg class="search__icon">\n                  <use href="${_iconsSvgDefault.default}#icon-arrow-right"></use>\n                </svg>\n              </a>\n            </div>\n    `;
     }
     _generateMarkupIngredient(ing) {
         return `\n              <li class="recipe__ingredient">\n                <svg class="recipe__icon">\n                  <use href="${_iconsSvgDefault.default}#icon-check"></use>\n                </svg>\n                <div class="recipe__quantity">${ing.quantity ? new _fractional.Fraction(ing.quantity).toString() : ''}</div>\n                <div class="recipe__description">\n                  <span class="recipe__unit">${ing.unit}</span>\n                  ${ing.description}\n                </div>\n              </li>\n            `;
@@ -683,7 +661,7 @@ class View {
 exports.default = View;
 
 },{"url:../../img/icons.svg":"3t5dV","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}],"3t5dV":[function(require,module,exports) {
-module.exports = require('./bundle-url').getBundleURL() + "icons.d4a14980.svg";
+module.exports = require('./bundle-url').getBundleURL() + "icons.HASH_REF_f6727c52d326b6f99dffa0b9d4a14980.svg";
 
 },{"./bundle-url":"3seVR"}],"3seVR":[function(require,module,exports) {
 "use strict";
@@ -1623,4 +1601,4 @@ exports.default = new PaginationView();
 
 },{"./View.js":"48jhP","url:../../img/icons.svg":"3t5dV","@parcel/transformer-js/src/esmodule-helpers.js":"367CR"}]},["1WnDs","3miIZ"], "3miIZ", "parcelRequirefade")
 
-//# sourceMappingURL=index.250b04c7.js.map
+//# sourceMappingURL=index.HASH_REF_6315ebf922a29661e8263da0250b04c7.js.map

@@ -17,6 +17,16 @@ class RecipeView extends View {
     // window.addEventListener('load', controlRecipes); // Easier way to combine both of these event listeners into one via line of code (2 lines above)
   }
 
+  addHandlerUpdateServings(handler) {
+    this._parentElement.addEventListener('click', event => {
+      const btn = event.target.closest('.btn--update-servings');
+      if (!btn) return;
+      console.log(btn);
+      const { updateTo } = btn.dataset; // Convert dataset in HTML (data-update-to="${this._data.servings - 1} from generateMarkup() method below to a number. + sign in front of btn.dataset is what converts the string from the dataset into a number.
+      if (+updateTo > 0) handler(+updateTo); // Pass the argument updateTo back into the handler which is the function passed into this method which essentially brings control of code back to controller.
+    });
+  }
+
   _generateMarkup() {
     return `
         <figure class="recipe__fig">
@@ -48,12 +58,16 @@ class RecipeView extends View {
                 <span class="recipe__info-text">servings</span>
 
                 <div class="recipe__info-buttons">
-                  <button class="btn--tiny btn--increase-servings">
+                  <button class="btn--tiny btn--update-servings" data-update-to="${
+                    this._data.servings - 1
+                  }">
                     <svg>
                       <use href="${icons}#icon-minus-circle"></use>
                     </svg>
                   </button>
-                  <button class="btn--tiny btn--increase-servings">
+                  <button class="btn--tiny btn--update-servings" data-update-to="${
+                    this._data.servings + 1
+                  }">
                     <svg>
                       <use href="${icons}#icon-plus-circle"></use>
                     </svg>
