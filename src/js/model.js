@@ -10,6 +10,7 @@ export const state = {
     page: 1, // Page to start all search results on; Could have multiple pages of recipe results but we start at page 1
     resultsPerPage: RES_PER_PAGE, // 10 results per page; Comes from config.js file
   },
+  bookmarks: [],
 };
 
 export const loadRecipe = async id => {
@@ -28,12 +29,16 @@ export const loadRecipe = async id => {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
+
+    if (state.bookmarks.some(bookmark => bookmark.id === id))
+      state.recipe.bookmarked = true;
+    else state.recipe.bookmarked = false;
+
+    console.log(state.recipe);
   } catch (error) {
     console.error(`${error}🔥🔥🔥🔥`);
     throw error;
   }
-
-  console.log(state.recipe);
 };
 
 export const loadSearchResults = async query => {
@@ -51,6 +56,7 @@ export const loadSearchResults = async query => {
         image: rec.image_url,
       };
     });
+    state.search.page = 1;
   } catch (error) {
     console.error(`${error}🔥🔥🔥🔥`);
     throw error;
@@ -71,4 +77,12 @@ export const updateServings = newServings => {
   });
 
   state.recipe.servings = newServings;
+};
+
+export const addBookmark = recipe => {
+  // Add bookmark
+  state.bookmarks.push(recipe);
+
+  // Mark current recipe as bookmark
+  if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
 };
